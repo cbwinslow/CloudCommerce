@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "app/api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "rewrites": [
+    { "source": "/crew", "destination": "http://localhost:8000/crew" } // Proxy to Python backend; adapt for prod
+  ]
+}
