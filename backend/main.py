@@ -1,15 +1,36 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
-from crewai import Agent, Task, Crew
-from openai import OpenAI
+from litellm import completion
+from llama_index.core import VectorStoreIndex, StorageContext
+from llama_index.embeddings.openai import OpenAIEmbedding
+from bitwarden import BitwardenClient  # CLI wrapper
 import os
+import sentry_sdk
 
 app = FastAPI()
 
-client = OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1",
+# Sentry init with full features
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+    enable_tracing=True,
+    enable_profiling=True,
+    integrations=[sentry_sdk.integrations.fastapi.FastApiIntegration()],
+    send_default_pii=False,  # No PII
+    release=f"{os.getenv('npm_package_version', '1.0.0')}",
 )
+
+# Bitwarden for secrets
+async def get_secret(name: str):
+    client = BitwardenClient()
+    await client.login(email=os.getenv("BITWARDEN_EMAIL"), password=os.getenv("BITWARDEN_PASSWORD"))
+    item = await client.get_item("cloudcommerce-keys")
+    return item.fields[name].value
+
+# LlamaIndex for RAG
+embed_model = OpenAIEmbedding(model="text-embedding-3-small", api_key=get_secret("OPENAI"))
+index = VectorStoreIndex.from_documents([])  # Load from Supabase
 
 class InputData(BaseModel):
     images: list[str]
@@ -17,79 +38,37 @@ class InputData(BaseModel):
     category: str = None
     condition: str = None
 
-# Define Agents
-vision_agent = Agent(
-    role='Vision Analyst',
-    goal='Analyze images for item details',
-    backstory="You specialize in computer vision for item evaluation.",
-    llm="llava-13b-v1.6",  # Low-cost via OpenRouter
-    verbose=True
-)
-
-research_agent = Agent(
-    role='Market Researcher',
-    goal='Scrape public sites for similar items and prices',
-    backstory="You ethically scrape marketplaces for pricing data.",
-    llm="meta-llama/llama-3.1-8b-instruct:free",
-    verbose=True
-)
-
-pricing_agent = Agent(
-    role='Pricing Expert',
-    goal='Recommend price based on research and analysis',
-    backstory="You calculate optimal selling prices.",
-    llm="meta-llama/llama-3.1-8b-instruct:free",
-    verbose=True
-)
-
-listing_agent = Agent(
-    role='Listing Generator',
-    goal='Create platform-specific listings',
-    backstory="You format listings for eBay, Amazon, etc.",
-    llm="meta-llama/llama-3.1-8b-instruct:free",
-    verbose=True
-)
-
-@app.post("/crew")
-async def run_crew(data: InputData):
-    try:
-        # Tasks
-        vision_task = Task(
-            description=f"Analyze images: {data.images} and summary: {data.summary}. Extract name, condition, damage, etc.",
-            agent=vision_agent
+@app.post("/submit")
+async def submit_item(request: Request, data: dict):
+    with sentry_sdk.start_span(op="llm.chain"):
+        # LiteLLM for OpenRouter
+        openrouter_key = await get_secret("OPENROUTER")
+        response = completion(
+            model="openrouter/llava-13b-v1.6",
+            messages=[{"role": "user", "content": data["prompt"]}],
+            api_key=openrouter_key,
+            temperature=0.7
         )
 
-        research_task = Task(
-            description=f"Research similar items for '{data.summary}' on eBay, Amazon, etc. Get prices.",
-            agent=research_agent,
-            context=[vision_task]  # Depends on vision
-        )
+        # LlamaIndex RAG for semantic comps
+        retriever = index.as_retriever()
+        comps = retriever.retrieve(data["summary"])
+        rag_prompt = f"Based on comps {comps}, generate listing for {data['summary']}."
+        rag_response = completion(model="openrouter/llama-3.1-8b-instruct", messages=[{"role": "user", "content": rag_prompt}], api_key=openrouter_key)
 
-        pricing_task = Task(
-            description="Recommend price and check arbitrage opportunities.",
-            agent=pricing_agent,
-            context=[research_task]
-        )
+        sentry_sdk.start_span(op="db.insert")  # Trace DB
+        # Supabase insert...
 
-        listing_task = Task(
-            description="Generate listings for Facebook Marketplace, eBay, Amazon. Output JSON and CSV.",
-            agent=listing_agent,
-            context=[pricing_task]
-        )
+    return {"analysis": response.choices[0].message.content, "rag": rag_response.choices[0].message.content}
 
-        # Crew
-        crew = Crew(
-            agents=[vision_agent, research_agent, pricing_agent, listing_agent],
-            tasks=[vision_task, research_task, pricing_task, listing_task],
-            verbose=2
-        )
-
-        result = crew.kickoff()
-        return {"analysis": result}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# Cron for rotation (Supabase Edge calls this)
+@app.post("/rotate-secrets")
+async def rotate_secrets():
+    with sentry_sdk.start_span(op="secret.rotation"):
+        client = BitwardenClient()
+        await client.login(email=os.getenv("BITWARDEN_EMAIL"), password=os.getenv("BITWARDEN_PASSWORD"))
+        new_key = os.urandom(32).hex()
+        await client.set_item("cloudcommerce-keys", {"OPENROUTER": new_key})
+        # Update services (e.g., env restart)
+        sentry_sdk.capture_message("Secrets rotated", level="info")
+    return {"status": "rotated"}

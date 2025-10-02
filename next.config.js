@@ -13,6 +13,7 @@ const nextConfig = {
   },
   // For Vercel deployment
   output: 'standalone',
+  domains: ['cloudcurio.cc'],
 };
 
 module.exports = nextConfig;

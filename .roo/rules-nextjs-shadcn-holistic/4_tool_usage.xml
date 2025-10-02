@@ -1,0 +1,148 @@
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<tool_usage_guide>
+  <tool_priorities>
+    <priority level="1">
+      <tool>search_files</tool>
+      <when>Use first to find existing shadcn components, API routes, or patterns in the codebase</when>
+      <why>Ensures holistic alignment with existing implementations before creating new code</why>
+    </priority>
+    <priority level="2">
+      <tool>read_file</tool>
+      <when>After search_files to examine full context of relevant files (e.g., next.config.js, components/ui/Button.tsx)</when>
+      <why>Provides complete context for accurate modifications</why>
+    </priority>
+    <priority level="3">
+      <tool>apply_diff</tool>
+      <when>For surgical edits to existing files; always read_file first for exact content</when>
+      <why>Maintains precision in large codebases; avoids overwriting unrelated code</why>
+    </priority>
+  </tool_priorities>
+
+  <tool_specific_guidance>
+    <tool name="apply_diff">
+      <purpose>Surgical edits to Next.js files, UI components, or configs</purpose>
+      <when_to_use>When modifying existing code; prefer over write_to_file for targeted changes</when_to_use>
+      <syntax>
+        <command>apply_diff</command>
+        <parameters>
+          <parameter name="args" required="true">
+            <description>XML with path and diff content</description>
+            <type>structured XML</type>
+            <example>Multiple SEARCH/REPLACE blocks for multi-file changes</example>
+          </parameter>
+        </parameters>
+      </syntax>
+      <examples>
+        <example scenario="Update shadcn component variant">
+          <code><![CDATA[<apply_diff>
+<args>
+  <file>
+    <path>components/ui/Button.tsx</path>
+    <diff>
+      <content><![CDATA[
+<<<<<<< SEARCH
+variant: 'default',
+=======
+variant: 'primary',
+]]></content>
+      <start_line>45</start_line>
+    </diff>
+  </file>
+</args>
+</apply_diff>]]></code>
+          <output>Expected: Modified component with new variant</output>
+        </example>
+      </examples>
+    </tool>
+
+    <tool name="execute_command">
+      <purpose>Run Next.js scripts, typecheck, lint, or test commands</purpose>
+      <when_to_use>For verification after changes; e.g., pnpm lint, pnpm build</when_to_use>
+      <syntax>
+        <command>execute_command</command>
+        <parameters>
+          <parameter name="command" required="true">
+            <description>CLI command to run</description>
+            <type>string</type>
+            <example>pnpm lint --fix</example>
+          </parameter>
+          <parameter name="cwd" required="false">
+            <description>Working directory if needed</description>
+            <type>string</type>
+            <example>./frontend</example>
+          </parameter>
+        </parameters>
+      </syntax>
+      <examples>
+        <example scenario="Verify build after changes">
+          <code>pnpm build</code>
+          <output>Build success or error details</output>
+        </example>
+      </examples>
+    </tool>
+
+    <tool name="browser_action">
+      <purpose>Test UI responsiveness and functionality</purpose>
+      <when_to_use>After UI changes; launch dev server and interact with components</when_to_use>
+      <syntax>
+        <command>browser_action</command>
+        <parameters>
+          <parameter name="action" required="true">
+            <description>launch, click, type, etc.</description>
+            <type>string</type>
+            <example>launch</example>
+          </parameter>
+          <parameter name="url" required="false">
+            <description>URL to navigate</description>
+            <type>string</type>
+            <example>http://localhost:3000</example>
+          </parameter>
+        </parameters>
+      </syntax>
+      <examples>
+        <example scenario="Test new shadcn form">
+          <code><![CDATA[<browser_action>
+<action>launch</action>
+<url>http://localhost:3000/submit</url>
+</browser_action>]]></code>
+          <output>Screenshot of form; verify responsive layout</output>
+        </example>
+      </examples>
+    </tool>
+
+    <tool name="use_mcp_tool">
+      <purpose>Invoke MCP servers for repo analysis or advanced features</purpose>
+      <when_to_use>When needing dependency graphs or semantic search beyond built-in tools</when_to_use>
+      <syntax>
+        <command>use_mcp_tool</command>
+        <parameters>
+          <parameter name="server_name" required="true">
+            <description>MCP server name</description>
+            <type>string</type>
+            <example>repo-graph</example>
+          </parameter>
+          <parameter name="tool_name" required="true">
+            <description>Tool to invoke</description>
+            <type>string</type>
+            <example>get_dependencies</example>
+          </parameter>
+          <parameter name="arguments" required="true">
+            <description>JSON args for tool</description>
+            <type>json</type>
+            <example>{"component": "Button"}</example>
+          </parameter>
+        </parameters>
+      </syntax>
+      <examples>
+        <example scenario="Analyze component dependencies">
+          <code><![CDATA[<use_mcp_tool>
+<server_name>repo-analyzer</server_name>
+<tool_name>find_component_usage</tool_name>
+<arguments>{"name": "UserProfile"}</arguments>
+</use_mcp_tool>]]></code>
+          <output>Usage locations and dependencies</output>
+        </example>
+      </examples>
+    </tool>
+  </tool_specific_guidance>
+</tool_usage_guide>]]>
