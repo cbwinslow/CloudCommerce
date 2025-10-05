@@ -74,10 +74,16 @@ async def process_submission(images, summary, category="", condition=""):
     listing_chain = listing_prompt | ChatOpenAI(model="meta-llama/llama-3.1-8b-instruct:free") | StrOutputParser()
     listings = await listing_chain.ainvoke({"analysis": analysis, "scraped": scraped})
     
-    # CSV
-    csv_lines = "Platform,Title,Desc,Price,Condition\n"
-    for platform in ["ebay", "amazon", "facebook"]:
-        csv_lines += f'{platform},"AI Item","Generated desc",{scraped["avg_price"]},"{condition}"\n'
+    # Return raw data for CSV generation
+    return {
+        "analysis": analysis,
+        "listings": listings,
+        "price_data": {
+            "avg_price": scraped["avg_price"],
+            "arbitrage": scraped["arbitrage"]
+        },
+        "condition": condition
+    }
     
     # Store in Letta memory (transient)
     await agent.messages.create(content=analysis, role="assistant")
@@ -93,16 +99,17 @@ async def submit_item(data: dict):
     if not data.get("credits", 0) > 0:
         return {"error": "Insufficient credits"}
     
-    # Deduct 1 credit from Supabase using atomic operation
+    # Deduct 1 credit atomically from Supabase
     user_id = data.get("user_id")
-    response = (supabase.table("users")
-                .update({"credits": "credits - 1"})
-                .eq("id", user_id)
-                .execute())
+    response = (
+        supabase.table("users")
+        .update({"credits": "credits - 1"})
+        .eq("id", user_id)
+        .execute()
+    )
     
     if response.error:
         return {"error": f"Credit deduction failed: {response.error.message}"}
-    supabase.table('users').update({'credits': current_credits - 1}).eq('id', user_id).execute()
     
     result = await process_submission(data["images"], data["summary"], data.get("category"), data.get("condition"))
     

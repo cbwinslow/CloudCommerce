@@ -117,7 +117,7 @@ Notes:
 - [x] Set up Python virtual environment: `cd backend && python -m venv venv`
 - [x] Activate virtual environment and install requirements
 - [x] Start backend server: `uvicorn main:app --reload` (localhost:8000)
-- [ ] Verify API endpoints are working
+- [x] Verify API endpoints are working
 
 ### 4. Mobile App Setup
 - [x] Install mobile dependencies: `cd mobile && npx expo install`
@@ -175,8 +175,8 @@ Notes:
 1. **User Management & Authentication**
    - [x] Set up Clerk authentication (already configured)
    - [x] Create sign-in/sign-up pages
-   - [ ] Add password reset functionality
-   - [ ] Create user profile management page
+   - [x] Add password reset functionality
+   - [x] Create user profile management page
    - [ ] Add social login options (Google, GitHub)
    - [ ] Implement role-based access control
 
@@ -206,7 +206,7 @@ Notes:
 5. **Error Handling & Validation**
    - [x] Add comprehensive form validation
    - [x] Implement user-friendly error messages
-   - [ ] Add retry mechanisms for failed requests
+   - [x] Add retry mechanisms for failed requests
    - [x] Create fallback UI states
    - [x] Add input sanitization and validation
 

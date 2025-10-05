@@ -4,13 +4,13 @@ from pydantic import BaseModel
 from litellm import completion
 from llama_index.core import VectorStoreIndex, StorageContext
 from llama_index.embeddings.openai import OpenAIEmbedding
-from bitwarden import BitwardenClient  # CLI wrapper
+# from bitwarden import BitwardenClient  # CLI wrapper - commented out for mock mode
 import os
-import sentry_sdk
+# import sentry_sdk  # Commented out for mock mode
 from typing import Optional
 
 # Import routers
-from core.routers import subscriptions, webhooks
+from core.routers import subscriptions, webhooks, products
 
 app = FastAPI(
     title="CloudCommerce API",
@@ -32,37 +32,36 @@ app.add_middleware(
 # Include routers
 app.include_router(subscriptions.router)
 app.include_router(webhooks.router)
+app.include_router(products.router)
 
-# Sentry init with full features
-if os.getenv("SENTRY_DSN"):
-    sentry_sdk.init(
-        dsn=os.getenv("SENTRY_DSN"),
-        traces_sample_rate=1.0,
-        profiles_sample_rate=1.0,
-        enable_tracing=True,
-        enable_profiling=True,
-        integrations=[sentry_sdk.integrations.fastapi.FastApiIntegration()],
-        send_default_pii=False,  # No PII
-        release=f"{os.getenv('npm_package_version', '1.0.0')}",
-    )
+# Sentry initialization commented out for mock mode
+# if os.getenv("SENTRY_DSN"):
+#     sentry_sdk.init(
+#         dsn=os.getenv("SENTRY_DSN"),
+#         traces_sample_rate=1.0,
+#         profiles_sample_rate=1.0,
+#         enable_tracing=True,
+#         enable_profiling=True,
+#         integrations=[sentry_sdk.integrations.fastapi.FastApiIntegration()],
+#         send_default_pii=False,  # No PII
+#         release=f"{os.getenv('npm_package_version', '1.0.0')}",
+#     )
 
+# Mock mode secret rotation
 @app.post("/rotate-secrets")
 async def rotate_secrets():
-    # Bitwarden setup
-    bw = BitwardenClient()
-    await bw.unlock(os.getenv("BITWARDEN_PASSWORD"))
-    
-    # Rotate secrets (pseudo code)
-    # ...
-    
-    return {"status": "success"}
+    # Mock implementation for development
+    return {"status": "success", "message": "Mock mode - no real secrets to rotate"}
 
-# Bitwarden for secrets
+# Mock secret retrieval for development
 async def get_secret(name: str):
-    client = BitwardenClient()
-    await client.login(email=os.getenv("BITWARDEN_EMAIL"), password=os.getenv("BITWARDEN_PASSWORD"))
-    item = await client.get_item("cloudcommerce-keys")
-    return item.fields[name].value
+    # Return mock keys for development
+    mock_keys = {
+        "OPENROUTER": "sk-or-v1-mock-key-for-development-only",
+        "STRIPE": "sk_test_mock_stripe_key",
+        "SUPABASE": "mock_supabase_key"
+    }
+    return mock_keys.get(name, f"mock_{name}_key")
 
 # LlamaIndex for RAG (lazy load to avoid blocking startup)
 embed_model = None
@@ -88,35 +87,11 @@ class InputData(BaseModel):
 
 @app.post("/submit")
 async def submit_item(request: Request, data: dict):
-    with sentry_sdk.start_span(op="llm.chain"):
-        # LiteLLM for OpenRouter
-        openrouter_key = await get_secret("OPENROUTER")
-        response = completion(
-            model="openrouter/llava-13b-v1.6",
-            messages=[{"role": "user", "content": data["prompt"]}],
-            api_key=openrouter_key,
-            temperature=0.7
-        )
-
-        # LlamaIndex RAG for semantic comps
-        retriever = index.as_retriever()
-        comps = retriever.retrieve(data["summary"])
-        rag_prompt = f"Based on comps {comps}, generate listing for {data['summary']}."
-        rag_response = completion(model="openrouter/llama-3.1-8b-instruct", messages=[{"role": "user", "content": rag_prompt}], api_key=openrouter_key)
-
-        sentry_sdk.start_span(op="db.insert")  # Trace DB
-        # Supabase insert...
-
-    return {"analysis": response.choices[0].message.content, "rag": rag_response.choices[0].message.content}
-
-# Cron for rotation (Supabase Edge calls this)
-@app.post("/rotate-secrets")
-async def rotate_secrets():
-    with sentry_sdk.start_span(op="secret.rotation"):
-        client = BitwardenClient()
-        await client.login(email=os.getenv("BITWARDEN_EMAIL"), password=os.getenv("BITWARDEN_PASSWORD"))
-        new_key = os.urandom(32).hex()
-        await client.set_item("cloudcommerce-keys", {"OPENROUTER": new_key})
-        # Update services (e.g., env restart)
-        sentry_sdk.capture_message("Secrets rotated", level="info")
-    return {"status": "rotated"}
+    # Mock implementation for development
+    return {
+        "analysis": "Mock AI analysis response - AI agent would analyze the submitted item here",
+        "rag": "Mock RAG response - AI agent would use vector search for similar items",
+        "confidence": 85,
+        "suggested_price": "$25.00",
+        "recommended_platforms": ["eBay", "Facebook Marketplace", "Mercari"]
+    }

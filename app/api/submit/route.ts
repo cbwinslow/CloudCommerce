@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import { createClient } from '@supabase/supabase-js'; // For DB/credits
+import { createClient } from '@supabase/supabase-js';
+import Papa from 'papaparse';
 import { analyzeItem, generateListings } from '@/lib/openrouter';
 import { scrapeSimilarItems } from '@/lib/scraper';
 import { runCrewAI } from '@/lib/crew';
