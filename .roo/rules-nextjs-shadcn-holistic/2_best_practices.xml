@@ -1,0 +1,90 @@
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<best_practices>
+  <general_principles>
+    <principle priority="high">
+      <name>Holistic Codebase Alignment</name>
+      <description>Always analyze the entire repository structure, dependencies, and existing patterns before proposing or implementing changes to ensure consistency across UI, backend, and integrations.</description>
+      <rationale>Prevents siloed changes that break architecture or conventions in large Next.js codebases.</rationale>
+      <example>
+        <scenario>Adding a new API route</scenario>
+        <good>Review existing app/api/ routes, sync with Zod schemas in lib/types, add server action wrapper.</good>
+        <bad>Implement isolated route without checking auth or data models.</bad>
+      </example>
+    </principle>
+    <principle priority="high">
+      <name>UI Excellence with shadcn</name>
+      <description>Use shadcn/ui components for all new UI, ensuring accessibility, responsiveness, and Tailwind integration without custom plugins.</description>
+      <rationale>Maintains consistent, production-ready design system aligned with Radix primitives.</rationale>
+      <example>
+        <scenario>Creating a form component</scenario>
+        <good>Import Button, Input from shadcn/ui; add ARIA labels, responsive classes.</good>
+        <bad>Use raw HTML inputs without accessibility attributes.</bad>
+      </example>
+    </principle>
+    <principle priority="medium">
+      <name>Type-Safety and Validation</name>
+      <description>Enforce strict TypeScript with Zod for all inputs; centralize types in lib/types and sync client/server boundaries.</description>
+      <rationale>Avoids runtime errors in full-stack flows, especially with server actions and API routes.</rationale>
+      <example>
+        <scenario>Server action for form submission</scenario>
+        <good>Define Zod schema, validate formData, infer types for response.</good>
+        <bad>Skip validation, rely on loose any types.</bad>
+      </example>
+    </principle>
+  </general_principles>
+
+  <code_conventions>
+    <convention category="naming">
+      <rule>Component names: PascalCase for files (e.g., UserProfile.tsx); hooks prefixed with use (e.g., useUserProfile).</rule>
+      <examples>
+        <good>components/ui/UserCard.tsx, lib/hooks/useAuth.ts</good>
+        <bad>user-card.tsx, authHook.ts</bad>
+      </examples>
+    </convention>
+    <convention category="structure">
+      <rule>UI components in components/ui/; API routes in app/api/; shared types in lib/types/; server actions in app/actions.ts.</rule>
+      <template><![CDATA[
+components/ui/
+  ├── Button.tsx
+  └── Form.tsx
+
+app/api/
+  └── users/
+      └── route.ts
+
+lib/types/
+  └── user.ts
+      ]]></template>
+    </convention>
+  </code_conventions>
+
+  <common_pitfalls>
+    <pitfall>
+      <description>Ignoring RSC boundaries in Next.js App Router</description>
+      <why_problematic>Leads to hydration errors or unnecessary client bundles.</why_problematic>
+      <correct_approach>Use 'use client' only when necessary; prefer server components for data fetching.</correct_approach>
+    </pitfall>
+    <pitfall>
+      <description>Skipping Zod validation on server actions</description>
+      <why_problematic>Exposes to malformed data; no type inference for client.</why_problematic>
+      <correct_approach>Validate formData with Zod.parse() at entry point.</correct_approach>
+    </pitfall>
+  </common_pitfalls>
+
+  <quality_checklist>
+    <category name="before_starting">
+      <item>Review package.json for existing deps and scripts</item>
+      <item>Check tsconfig.json paths and strict mode</item>
+    </category>
+    <category name="during_implementation">
+      <item>Ensure shadcn components are imported correctly</item>
+      <item>Validate all inputs with Zod schemas</item>
+      <item>Add accessibility attributes to UI</item>
+    </category>
+    <category name="before_completion">
+      <item>Run typecheck and lint</item>
+      <item>Verify responsive UI in browser</item>
+      <item>Update docs if architecture changes</item>
+    </category>
+  </quality_checklist>
+</best_practices>]]>

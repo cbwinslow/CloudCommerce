@@ -1,0 +1,72 @@
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<workflow_instructions>
+  <mode_overview>
+    This mode specializes in developing production-ready Next.js applications with shadcn/ui, focusing on holistic reasoning across the entire codebase. It handles UI components, full-stack features, refactors, and integrations while ensuring type-safety, accessibility, and alignment with project conventions.
+  </mode_overview>
+
+  <prerequisites>
+    <prerequisite>Access to the full repository structure via read tools</prerequisite>
+    <prerequisite>Understanding of Next.js App Router, shadcn/ui, TypeScript, and related dependencies</prerequisite>
+    <prerequisite>Integration with MCP servers for advanced tooling if needed</prerequisite>
+  </prerequisites>
+
+  <initialization_steps>
+    <step number="1">
+      <title>Understand User Request</title>
+      <description>Parse the task to identify primary objective, UI requirements, full-stack needs, and constraints like existing architecture or Python interop.</description>
+      <actions>
+        <action>Analyze keywords for Next.js, shadcn, UI, API, or refactor tasks</action>
+        <action>Clarify ambiguities using ask_followup_question if needed</action>
+      </actions>
+    </step>
+    <step number="2">
+      <title>Gather Codebase Context</title>
+      <description>Examine project structure, dependencies, and existing patterns to ensure holistic alignment.</description>
+      <tools>
+        <tool>list_files - Map directory structure (app/, components/, lib/, backend/)</tool>
+        <tool>read_file - Review key configs (next.config.js, tsconfig.json, tailwind.config.ts, package.json)</tool>
+        <tool>search_files - Find existing shadcn components or API routes</tool>
+      </tools>
+    </step>
+  </initialization_steps>
+
+  <main_workflow>
+    <phase name="analysis">
+      <description>Assess current state and plan changes holistically.</description>
+      <steps>
+        <step>Identify affected areas: UI (shadcn), routing (App Router), data (server actions/API), types (Zod/TypeScript)</step>
+        <step>Check for breaking changes or migration needs; propose staged plan if complex</step>
+        <step>Review dependencies and conventions (e.g., auth with NextAuth, DB with Drizzle)</step>
+      </steps>
+    </phase>
+
+    <phase name="implementation">
+      <description>Execute changes with alignment to codebase.</description>
+      <steps>
+        <step>Create/edit UI components in components/ui/ using shadcn patterns; ensure responsive and accessible</step>
+        <step>Implement server actions or API routes in app/api/; add Zod validation and error handling</step>
+        <step>Update types in lib/types/; sync client/server boundaries</step>
+        <step>Integrate Python services via clean interfaces (REST/RPC) if required; add contract tests</step>
+        <step>Add tests: Vitest for units, Playwright for E2E</step>
+      </steps>
+    </phase>
+
+    <phase name="validation">
+      <description>Verify changes maintain codebase integrity.</description>
+      <steps>
+        <step>Run typecheck, lint, build via command tools</step>
+        <step>Test critical flows (e.g., form submission, API calls)</step>
+        <step>Update docs/ARCHITECTURE.md for material changes</step>
+        <step>Provide verification steps: manual UI checks, e2e paths</step>
+      </steps>
+    </phase>
+  </main_workflow>
+
+  <completion_criteria>
+    <criterion>Changes compile, type-check, and align with existing patterns</criterion>
+    <criterion>UI is accessible, responsive, and uses shadcn conventions</criterion>
+    <criterion>Full-stack features are secure, validated, and tested</criterion>
+    <criterion>No breaking changes; migration plan if needed</criterion>
+    <criterion>Docs and verification steps provided</criterion>
+  </completion_criteria>
+</workflow_instructions>]]>

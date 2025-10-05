@@ -1,0 +1,136 @@
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<examples>
+  <example name="add_shadcn_form_component">
+    <description>Demonstrates adding a shadcn form with server action and Zod validation.</description>
+    <context>User requests: "Add a user registration form using shadcn/ui."</context>
+    <workflow>
+      <step>Analyze: Check existing forms in components/, review auth in app/api/.</step>
+      <step>Plan: Create RegistrationForm.tsx in components/ui/, server action in app/actions.ts.</step>
+      <step>Implement: Use shadcn Input, Button; Zod schema for validation.</step>
+      <step>Validate: Add Vitest test, Playwright E2E for submission.</step>
+    </workflow>
+    <code language="tsx"><![CDATA[
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useForm as useHookForm } from 'react-hook-form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
+const formSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+export function RegistrationForm() {
+  const form = useHookForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const onSubmit = async (data: FormData) => {
+    const result = await createUserAction(data);
+    if (result.success) {
+      // Redirect or show success
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField control={form.control} name="email" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Email</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter email" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <Button type="submit">Register</Button>
+      </form>
+    </Form>
+  );
+}
+]]></code>
+    <explanation>Uses react-hook-form with Zod; integrates shadcn Form components. Server action handles validation and submission.</explanation>
+    <verification>
+      <step>pnpm lint components/ui/RegistrationForm.tsx</step>
+      <step>Manual: Check responsive form, error states.</step>
+      <step>E2E: Playwright test for submission flow.</step>
+    </verification>
+  </example>
+
+  <example name="refactor_api_with_migration">
+    <description>Refactors API route with migration plan for adding auth.</description>
+    <context>User requests: "Add Clerk auth to existing /api/users route."</context>
+    <workflow>
+      <step>Analyze: Read app/api/users/route.ts, check Clerk setup.</step>
+      <step>Plan: Stage 1 - Add auth check; Stage 2 - Update client calls; Stage 3 - Test.</step>
+      <step>Implement: Modify route with currentUser(), update types.</step>
+      <step>Validate: Run build, test protected route.</step>
+    </workflow>
+    <code language="ts"><![CDATA[
+import { NextRequest, NextResponse } from 'next/server';
+import { currentUser } from '@clerk/nextjs/server';
+
+export async function GET(req: NextRequest) {
+  const user = await currentUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Existing logic
+  return NextResponse.json({ users: [] });
+}
+]]></code>
+    <explanation>Stages changes to avoid breaking; updates for auth without full rewrite.</explanation>
+    <verification>
+      <step>Stage 1: Test unauthorized access returns 401.</step>
+      <step>Stage 2: Verify client fetches handle auth errors.</step>
+      <step>Update docs/ARCHITECTURE.md with auth changes.</step>
+    </verification>
+  </example>
+
+  <example name="python_integration">
+    <description>Integrates Python service for data processing in Next.js.</description>
+    <context>User requests: "Add Python ML model call from API route."</context>
+    <workflow>
+      <step>Analyze: Check lib/ for existing Python clients.</step>
+      <step>Plan: Create lib/python-client.ts, add route in app/api/ml/, contract test.</step>
+      <step>Implement: Typed fetch to proxy, error handling.</step>
+      <step>Validate: Vitest for client, manual API test.</step>
+    </workflow>
+    <code language="ts"><![CDATA[
+export async function predictWithML(input: { image: string }) {
+  const response = await fetch('/api/ml-predict', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) throw new Error('ML prediction failed');
+  return response.json();
+}
+
+// In app/api/ml-predict/route.ts
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  // Proxy to Python service
+  const pyResponse = await fetch('http://localhost:8000/ml', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return NextResponse.json(await pyResponse.json());
+}
+]]></code>
+    <explanation>Defines clean interface; proxy for security; add test for expected shape.</explanation>
+    <verification>
+      <step>Vitest: expect(result).toHaveProperty('prediction');</step>
+      <step>Manual: POST to /api/ml-predict with sample input.</step>
+    </verification>
+  </example>
+</examples>]]>
