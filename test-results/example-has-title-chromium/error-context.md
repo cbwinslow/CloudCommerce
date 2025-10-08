@@ -1,0 +1,119 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main "Installation" [ref=e3]:
+    - generic [ref=e5]:
+      - heading "Initial configuration" [level=3] [ref=e6]
+      - generic [ref=e8]:
+        - paragraph [ref=e9]:
+          - text: If you run Forgejo inside Docker, please read the
+          - link "documentation" [ref=e10] [cursor=pointer]:
+            - /url: https://forgejo.org/docs/latest/admin/installation-docker/
+          - text: before changing any settings.
+        - heading "Database settings" [level=4] [ref=e11]
+        - paragraph [ref=e12]: Forgejo requires MySQL, PostgreSQL, SQLite3 or TiDB (MySQL protocol).
+        - generic [ref=e13]:
+          - generic [ref=e14]: Database type *
+          - combobox [ref=e15] [cursor=pointer]:
+            - generic [ref=e16]: MySQL
+            - img [ref=e17]: 
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]: Host *
+            - textbox "Host *" [ref=e22]: 127.0.0.1:3306
+          - generic [ref=e23]:
+            - generic [ref=e24]: Username *
+            - textbox "Username *" [ref=e25]: forgejo
+          - generic [ref=e26]:
+            - generic [ref=e27]: Password *
+            - textbox "Password *" [ref=e28]
+          - generic [ref=e29]:
+            - generic [ref=e30]: Database name *
+            - textbox "Database name *" [ref=e31]: forgejo
+        - text: "*  *"
+        - heading "General settings" [level=4] [ref=e32]
+        - generic [ref=e33]:
+          - generic [ref=e34]: Instance title *
+          - textbox "Instance title *" [ref=e35]: Forgejo
+          - generic [ref=e36]: Enter your instance name here. It will be displayed on every page.
+        - generic [ref=e37]:
+          - generic [ref=e38]: Instance slogan
+          - textbox "Instance slogan" [ref=e39]: Beyond coding. We Forge.
+          - generic [ref=e40]: Enter your instance slogan here. Leave empty to disable.
+        - generic [ref=e41]:
+          - generic [ref=e42]: Repository root path *
+          - textbox "Repository root path *" [ref=e43]: /home/linuxbrew/.linuxbrew/var/forgejo/data/forgejo-repositories
+          - generic [ref=e44]: Remote Git repositories will be saved to this directory.
+        - generic [ref=e45]:
+          - generic [ref=e46]: Git LFS root path
+          - textbox "Git LFS root path" [ref=e47]: /home/linuxbrew/.linuxbrew/var/forgejo/data/lfs
+          - generic [ref=e48]: Files tracked by Git LFS will be stored in this directory. Leave empty to disable.
+        - generic [ref=e49]:
+          - generic [ref=e50]: User to run as *
+          - textbox "User to run as *" [ref=e51]: foomanchu8008
+          - generic [ref=e52]: The operating system username that Forgejo runs as. Note that this user must have access to the repository root path.
+        - generic [ref=e53]:
+          - generic [ref=e54]: Server domain *
+          - textbox "Server domain *" [ref=e55]:
+            - /placeholder: next.forgejo.org
+            - text: localhost
+          - generic [ref=e56]: Domain or host address for the server.
+        - generic [ref=e57]:
+          - generic [ref=e58]: SSH server port
+          - textbox "SSH server port" [ref=e59]: "22"
+          - generic [ref=e60]: Port number that will be used by the SSH server. Leave empty to disable SSH server.
+        - generic [ref=e61]:
+          - generic [ref=e62]: HTTP listen port *
+          - textbox "HTTP listen port *" [ref=e63]: "3000"
+          - generic [ref=e64]: Port number that will be used by the Forgejo web server.
+        - generic [ref=e65]:
+          - generic [ref=e66]: Base URL *
+          - textbox "Base URL *" [ref=e67]:
+            - /placeholder: https://next.forgejo.org
+            - text: http://localhost:3000/
+          - generic [ref=e68]: Base address for HTTP(S) clone URLs and email notifications.
+        - generic [ref=e69]:
+          - generic [ref=e70]: Log path *
+          - textbox "Log path *" [ref=e71]:
+            - /placeholder: log
+            - text: /home/linuxbrew/.linuxbrew/var/forgejo/log
+          - generic [ref=e72]: Log files will be written to this directory.
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]: Disable self-registration
+            - checkbox "Disable self-registration" [checked] [ref=e76] [cursor=pointer]
+          - generic [ref=e77]: Only instance administrators will be able to create new user accounts. It is highly recommended to keep registration disabled unless you intend to host a public instance for everyone and ready to deal with large amounts of spam accounts.
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]: Enable update checker
+            - checkbox "Enable update checker" [checked] [ref=e81] [cursor=pointer]
+          - generic [ref=e82]: It will periodically check for new Forgejo versions by checking a TXT DNS record at release.forgejo.org.
+        - heading "Optional settings" [level=4] [ref=e83]
+        - group [ref=e84]:
+          - generic "Email settings" [ref=e85] [cursor=pointer]
+        - group [ref=e86]:
+          - generic "Server and third-party service settings" [ref=e87] [cursor=pointer]
+          - text: 
+        - group [ref=e88]:
+          - generic "Administrator account settings" [ref=e89] [cursor=pointer]
+        - paragraph [ref=e91]: "These configuration options will be saved in: /home/linuxbrew/.linuxbrew/var/forgejo/custom/conf/app.ini"
+        - button "Install Forgejo" [ref=e94] [cursor=pointer]
+  - group "Footer" [ref=e95]:
+    - contentinfo "About this software" [ref=e96]:
+      - link "Powered by Forgejo" [ref=e97] [cursor=pointer]:
+        - /url: https://forgejo.org
+      - text: "Version: 12.0.4 Page:"
+      - strong [ref=e98]: 2ms
+      - text: "Template:"
+      - strong [ref=e99]: 2ms
+    - group "Links" [ref=e100]:
+      - menu [ref=e101] [cursor=pointer]:
+        - generic [ref=e102]:
+          - img [ref=e103]
+          - text: English
+      - link "Licenses" [ref=e105] [cursor=pointer]:
+        - /url: /assets/licenses.txt
+      - link "API" [ref=e106] [cursor=pointer]:
+        - /url: /api/swagger
+```
